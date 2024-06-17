@@ -8,7 +8,7 @@
 2. Установите необходимые библиотеки, запустив команду:
 
     ```
-    pip install Pillow numpy
+    pip install pillow numpy
     ```
 
 ## Использование
