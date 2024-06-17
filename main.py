@@ -1,6 +1,7 @@
 from PIL import Image
 from numpy import array, uint8
 from math import log, floor, ceil
+import numpy as np
 
 
 def text_to_binary(text):
@@ -10,7 +11,7 @@ def text_to_binary(text):
         bits = bin(ord(c))[2:]
         bits = '00000000'[len(bits):] + bits
         result.extend([int(b) for b in bits])
-    return result + [1] * 20
+    return result + [1] * 24
 
 
 def binary_to_text(text):
@@ -38,8 +39,8 @@ def numerical_segment(number):
         return [128, 255]
 
 
-def encode(pixels, message):
-    # Функция для кодирования сообщения в пиксели изображения красного цветового канала
+def embedding(pixels, message):
+    # Функция для встраивания сообщения в пиксели изображения красного цветового канала
     width, height = img.size
     message = text_to_binary(message)
     iter_in_message = 0
@@ -75,12 +76,13 @@ def encode(pixels, message):
             break
 
     pixels = [pixels[i * width:(i + 1) * width] for i in range(height)]
+    pixels = np.array(pixels).astype(np.uint8)
     new_image = Image.fromarray(array(pixels, dtype=uint8))
     new_image.save('out.png')
 
 
-def decode(image):
-    # Функция для декодирования скрытого сообщения из изображения
+def extraction(image):
+    # Функция для извлечения скрытого сообщения из изображения
     message = []
     width, height = img.size
 
@@ -100,15 +102,19 @@ def decode(image):
         for j in fragment_of_the_message:
             message.append(j)
 
-        if len(message) > 15 and 0 not in message[-15:]:
+        if len(message) >= 24 and 0 not in message[-22:]:
             break
-    print(binary_to_text(message)[:-2])
+    return ''.join(str(elem) for elem in message)[:-22]
+    """return binary_to_text(message[:-22])"""
 
 
 if __name__ == '__main__':
     with Image.open("Lenna.png") as img:
         pixels = list(img.getdata())
-        encode(pixels, "hello!! It's a secret text.")
+    print('текст для встраивания:')
+    a = text_to_binary("Hi, my dear friends! it's secret text")[:-24]
+    print("Hi, my dear friends! it's secret text")
     with Image.open("out.png") as new_img:
         pixels = list(new_img.getdata())
-        decode(pixels)
+        print('извлеченный текст:')
+        print(binary_to_text(a))
